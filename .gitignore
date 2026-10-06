@@ -1,0 +1,26 @@
+# ===== Backend (Java / Maven) =====
+backend/target/
+backend/HELP.md
+*.class
+
+# ===== Frontend (Node / Vite) =====
+frontend/node_modules/
+frontend/dist/
+
+# ===== Variables de entorno: NUNCA se suben =====
+.env
+.env.local
+.env.*.local
+
+# ===== IDEs =====
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# ===== Sistema operativo =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+*.log

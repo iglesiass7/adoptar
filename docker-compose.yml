@@ -1,0 +1,29 @@
+# Base de datos PostgreSQL para desarrollo local.
+#
+#   Levantar:                    docker compose up -d
+#   Ver si está andando:         docker compose ps
+#   Apagar (conserva los datos): docker compose down
+#   Borrar todo y empezar de 0:  docker compose down -v
+#
+# Toma usuario, contraseña y puerto del archivo .env (ver .env.example).
+
+services:
+  db:
+    image: postgres:17
+    container_name: adoptar-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-adoptar}
+      POSTGRES_USER: ${DB_USER:-adoptar}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-adoptar}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - adoptar-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  adoptar-db-data:

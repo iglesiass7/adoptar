@@ -1,0 +1,172 @@
+:root {
+  --fondo: #f6f8f7;
+  --superficie: #ffffff;
+  --texto: #1b2422;
+  --texto-suave: #5c6670;
+  --borde: #d9e2e0;
+  --acento: #14524f;
+  --acento-texto: #ffffff;
+  --ok: #1f8a4c;
+  --error: #c0392b;
+  --aviso: #c27c0e;
+  --neutro: #8a949c;
+
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--texto);
+  background: var(--fondo);
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #121816;
+    --superficie: #1b2321;
+    --texto: #e6ecea;
+    --texto-suave: #9aa6a3;
+    --borde: #2c3734;
+    --acento: #4fb3a9;
+    --acento-texto: #0d1513;
+    --ok: #3fbf7f;
+    --error: #f0776a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.pagina {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}
+
+.encabezado {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.encabezado h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--acento);
+}
+
+.huella {
+  color: var(--acento);
+  flex-shrink: 0;
+}
+
+.subtitulo {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.tarjeta h2 {
+  margin: 0 0 16px;
+  font-size: 1.1rem;
+}
+
+.estados {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.estado {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.punto-up {
+  background: var(--ok);
+}
+
+.punto-down {
+  background: var(--error);
+}
+
+.punto-out_of_service {
+  background: var(--aviso);
+}
+
+.punto-unknown {
+  background: var(--neutro);
+}
+
+.nombre {
+  font-weight: 600;
+}
+
+.valor {
+  color: var(--texto-suave);
+}
+
+.detalle {
+  grid-column: 2 / -1;
+  font-size: 0.9rem;
+  color: var(--error);
+}
+
+.mensaje {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+button {
+  font: inherit;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--acento);
+  color: var(--acento-texto);
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+a {
+  color: var(--acento);
+}
+
+.pie {
+  margin-top: 24px;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+  text-align: center;
+}

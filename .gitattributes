@@ -1,0 +1,16 @@
+# Fin de línea uniforme (LF) para todo el equipo, use Windows, Mac o Linux.
+# Sin esto, el script mvnw subido desde Windows deja de andar en la CI (Linux).
+* text=auto eol=lf
+
+# Los scripts de Windows sí necesitan CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binarios: no tocar
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

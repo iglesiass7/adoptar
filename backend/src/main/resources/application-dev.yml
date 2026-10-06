@@ -1,0 +1,22 @@
+# Perfil de DESARROLLO (es el que se usa por defecto al correr en tu compu).
+
+spring:
+  flyway:
+    # Además del esquema, carga los datos de prueba de db/demo
+    locations: classpath:db/migration,classpath:db/demo
+
+  jpa:
+    # Muestra en la consola el SQL que genera Hibernate (útil para aprender y depurar)
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.adoptar: DEBUG

@@ -1,0 +1,52 @@
+# Configuración común a todos los entornos.
+# Lo específico de desarrollo está en application-dev.yml.
+
+spring:
+  application:
+    name: adoptar
+
+  # Perfil que se usa si no se indica ninguno: "dev" (desarrollo local).
+  # En producción el Dockerfile activa "prod".
+  profiles:
+    default: dev
+
+  # Lee el .env de la raíz del repo, el mismo que usa docker compose.
+  # Es opcional: si no existe, se usan los valores por defecto de abajo.
+  config:
+    import:
+      - "optional:file:../.env[.properties]"
+      - "optional:file:.env[.properties]"
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:adoptar}
+    username: ${DB_USER:adoptar}
+    password: ${DB_PASSWORD:adoptar}
+
+  jpa:
+    # Evita consultas a la base fuera de los services (mala práctica que Spring trae activada)
+    open-in-view: false
+    hibernate:
+      # El esquema lo manejan las migraciones de Flyway. Hibernate solo verifica
+      # que las entidades coincidan con las tablas. NUNCA poner "update".
+      ddl-auto: validate
+
+  flyway:
+    locations: classpath:db/migration
+
+server:
+  # Las plataformas de deploy suelen indicar el puerto en la variable PORT
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      # Muestra el estado de cada componente (por ejemplo "db"), sin datos sensibles
+      show-components: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
