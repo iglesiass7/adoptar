@@ -1,5 +1,7 @@
 package com.adoptar.usuarios.controller;
 
+import com.adoptar.usuarios.dto.LoginRequest;
+import com.adoptar.usuarios.dto.LoginResponse;
 import com.adoptar.usuarios.dto.RegistroAdoptanteRequest;
 import com.adoptar.usuarios.dto.UsuarioResponse;
 import com.adoptar.usuarios.service.UsuarioService;
@@ -14,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Endpoints públicos de acceso: registro (y, más adelante, login).
+ * Endpoints públicos de acceso: registro e inicio de sesión.
  */
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -33,5 +35,12 @@ public class AuthController {
             description = "Crea la cuenta con rol ADOPTANTE. Responde 409 si el mail ya está registrado.")
     public UsuarioResponse registrarAdoptante(@Valid @RequestBody RegistroAdoptanteRequest datos) {
         return usuarioService.registrarAdoptante(datos);
+    }
+
+    @PostMapping("/login")
+    @Operation(summary = "Iniciar sesión",
+            description = "Devuelve el token para mandar en cada pedido. Responde 401 si el mail o la contraseña no coinciden.")
+    public LoginResponse iniciarSesion(@Valid @RequestBody LoginRequest datos) {
+        return usuarioService.iniciarSesion(datos);
     }
 }
