@@ -119,6 +119,15 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!-- Misma zona horaria que AdoptarApplication.ZONA_HORARIA: en Windows con hora
+                 argentina, sin esto los tests no se pueden conectar a PostgreSQL -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Duser.timezone=America/Argentina/Buenos_Aires</argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

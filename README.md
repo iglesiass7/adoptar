@@ -129,6 +129,7 @@ Los tests levantan un PostgreSQL real con Testcontainers: **Docker Desktop tiene
 | --- | --- |
 | `docker compose up` falla porque el puerto 5432 está ocupado | Ya tenés un PostgreSQL instalado. Cambiá `DB_PORT` en `.env` (por ejemplo a `5433`) y volvé a levantar |
 | El backend no arranca: `Connection refused` | La base no está levantada: `docker compose up -d` |
+| `invalid value for parameter "TimeZone": "America/Buenos_Aires"` | Estás en una versión vieja de `main`: hacé `git pull`. La zona horaria se fija en `AdoptarApplication` y en el `pom.xml` |
 | Los tests fallan con `Could not find a valid Docker environment` | Abrí Docker Desktop |
 | `./mvnw: Permission denied` (Mac / Linux) | `chmod +x backend/mvnw` |
 
