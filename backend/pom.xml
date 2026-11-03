@@ -56,6 +56,16 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+        <!-- Generar y validar tokens JWT (lo usa el login del módulo usuarios) -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
+        </dependency>
+        <!-- Leer el token de cada pedido (Authorization: Bearer ...) y autenticar con él -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-resource-server</artifactId>
+        </dependency>
 
         <!-- ===== Monitoreo: /actuator/health ===== -->
         <dependency>
