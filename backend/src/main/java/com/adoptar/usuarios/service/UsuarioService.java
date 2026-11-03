@@ -1,5 +1,6 @@
 package com.adoptar.usuarios.service;
 
+import com.adoptar.shared.exception.RecursoNoEncontradoException;
 import com.adoptar.usuarios.dominio.CredencialesInvalidasException;
 import com.adoptar.usuarios.dominio.EmailYaRegistradoException;
 import com.adoptar.usuarios.dominio.Usuario;
@@ -43,6 +44,18 @@ public class UsuarioService {
         Usuario adoptante = Usuario.nuevoAdoptante(email, passwordEncoder.encode(datos.password()),
                 datos.nombre(), datos.telefono());
         return UsuarioResponse.de(usuarios.save(adoptante));
+    }
+
+    /**
+     * Datos de una cuenta.
+     *
+     * @throws RecursoNoEncontradoException si no existe
+     */
+    @Transactional(readOnly = true)
+    public UsuarioResponse obtener(Long id) {
+        return usuarios.findById(id)
+                .map(UsuarioResponse::de)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", id));
     }
 
     /**

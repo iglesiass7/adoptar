@@ -6,6 +6,7 @@ import com.adoptar.usuarios.dto.RegistroAdoptanteRequest;
 import com.adoptar.usuarios.dto.UsuarioResponse;
 import com.adoptar.usuarios.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/auth")
 @Tag(name = "Acceso", description = "Registro e inicio de sesión")
+@SecurityRequirements // públicos: no piden token
 public class AuthController {
 
     private final UsuarioService usuarioService;
