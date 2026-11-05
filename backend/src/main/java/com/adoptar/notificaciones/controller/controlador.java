@@ -4,14 +4,15 @@ import com.adoptar.notificaciones.dto.NotificacionResponse;
 import com.adoptar.notificaciones.service.NotificacionService;
 import com.adoptar.shared.exception.AccesoDenegadoException;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,13 +22,12 @@ import java.util.List;
 /**
  * Controlador REST para el módulo M5 (Notificaciones).
  * <p>
- * Responsabilidad de la capa: traducir peticiones HTTP, extraer la identidad
- * del usuario logueado a partir del token JWT y delegar la orquestación y lógica
- * al {@link NotificacionService}.
+ * Responsabilidad de la capa: traducir peticiones HTTP, identificar al usuario
+ * y delegar la orquestación y lógica de negocio a {@link NotificacionService}.
  * <p>
  * Casos de uso cubiertos:
  * <ul>
- *   <li>CU-25: Consultar notificaciones del usuario autenticado (con opción de filtrar solo no leídas).</li>
+ *   <li>CU-25: Consultar notificaciones del usuario autenticado (con filtro opcional de no leídas).</li>
  *   <li>CU-26: Marcar notificación como leída.</li>
  * </ul>
  */
@@ -45,20 +45,23 @@ public class controlador {
     /**
      * CU-25: Obtiene las notificaciones del usuario logueado.
      *
-     * @param token          Token JWT inyectado por Spring Security con la sesión del usuario.
-     * @param soloNoLeidas   Filtro opcional: si es true, devuelve solo las pendientes de lectura.
+     * @param authentication  Objeto de autenticación de Spring Security (compatible con JWT cuando esté configurado).
+     * @param usuarioIdHeader Header opcional para probar endpoints antes del módulo de autenticación (X-Usuario-Id).
+     * @param soloNoLeidas    Filtro opcional: si es true, devuelve solo las pendientes de lectura.
      * @return Lista de notificaciones ordenadas cronológicamente (más recientes primero).
      */
     @GetMapping
     @Operation(
             summary = "Listar notificaciones del usuario (CU-25)",
-            description = "Devuelve el listado de notificaciones del usuario autenticado. "
-                    + "Por defecto incluye todas; se puede filtrar con ?soloNoLeidas=true."
+            description = "Devuelve el listado de notificaciones del usuario autenticado ordenadas de más recientes a más antiguas. "
+                    + "Permite filtrar solo no leídas con ?soloNoLeidas=true."
     )
     public List<NotificacionResponse> obtenerNotificaciones(
-            @AuthenticationPrincipal Jwt token,
+            Authentication authentication,
+            @Parameter(description = "ID del usuario para pruebas si no hay JWT configurado")
+            @RequestHeader(value = "X-Usuario-Id", required = false) Long usuarioIdHeader,
             @RequestParam(required = false, defaultValue = "false") boolean soloNoLeidas) {
-        Long usuarioId = extraerUsuarioId(token);
+        Long usuarioId = extraerUsuarioId(authentication, usuarioIdHeader);
         return notificacionService.obtenerNotificacionesDeUsuario(usuarioId, soloNoLeidas);
     }
 
@@ -71,8 +74,10 @@ public class controlador {
             summary = "Cantidad de notificaciones no leídas",
             description = "Devuelve el número total de notificaciones pendientes de leer del usuario actual."
     )
-    public long contarNoLeidas(@AuthenticationPrincipal Jwt token) {
-        Long usuarioId = extraerUsuarioId(token);
+    public long contarNoLeidas(
+            Authentication authentication,
+            @RequestHeader(value = "X-Usuario-Id", required = false) Long usuarioIdHeader) {
+        Long usuarioId = extraerUsuarioId(authentication, usuarioIdHeader);
         return notificacionService.contarNoLeidas(usuarioId);
     }
 
@@ -86,16 +91,16 @@ public class controlador {
     )
     public NotificacionResponse obtenerPorId(
             @PathVariable Long id,
-            @AuthenticationPrincipal Jwt token) {
-        Long usuarioId = extraerUsuarioId(token);
+            Authentication authentication,
+            @RequestHeader(value = "X-Usuario-Id", required = false) Long usuarioIdHeader) {
+        Long usuarioId = extraerUsuarioId(authentication, usuarioIdHeader);
         return notificacionService.obtenerPorId(id, usuarioId);
     }
 
     /**
      * CU-26: Marcar una notificación como leída.
      *
-     * @param id    ID de la notificación a marcar.
-     * @param token Token del usuario (se verifica pertenencia en el service).
+     * @param id ID de la notificación a marcar.
      * @return La notificación con el estado actualizado.
      */
     @PatchMapping("/{id}/leida")
@@ -105,8 +110,9 @@ public class controlador {
     )
     public NotificacionResponse marcarComoLeida(
             @PathVariable Long id,
-            @AuthenticationPrincipal Jwt token) {
-        Long usuarioId = extraerUsuarioId(token);
+            Authentication authentication,
+            @RequestHeader(value = "X-Usuario-Id", required = false) Long usuarioIdHeader) {
+        Long usuarioId = extraerUsuarioId(authentication, usuarioIdHeader);
         return notificacionService.marcarComoLeida(id, usuarioId);
     }
 
@@ -118,8 +124,10 @@ public class controlador {
             summary = "Marcar todas las notificaciones como leídas",
             description = "Actualiza todas las notificaciones no leídas del usuario al estado leída."
     )
-    public ResponseEntity<Void> marcarTodasComoLeidas(@AuthenticationPrincipal Jwt token) {
-        Long usuarioId = extraerUsuarioId(token);
+    public ResponseEntity<Void> marcarTodasComoLeidas(
+            Authentication authentication,
+            @RequestHeader(value = "X-Usuario-Id", required = false) Long usuarioIdHeader) {
+        Long usuarioId = extraerUsuarioId(authentication, usuarioIdHeader);
         notificacionService.marcarTodasComoLeidas(usuarioId);
         return ResponseEntity.noContent().build();
     }
@@ -134,20 +142,27 @@ public class controlador {
     )
     public ResponseEntity<Void> eliminarNotificacion(
             @PathVariable Long id,
-            @AuthenticationPrincipal Jwt token) {
-        Long usuarioId = extraerUsuarioId(token);
+            Authentication authentication,
+            @RequestHeader(value = "X-Usuario-Id", required = false) Long usuarioIdHeader) {
+        Long usuarioId = extraerUsuarioId(authentication, usuarioIdHeader);
         notificacionService.eliminar(id, usuarioId);
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * Extrae el ID del usuario del subject del token JWT emitido en el login.
+     * Extrae el ID del usuario desde la autenticación de Spring Security o desde el header de pruebas X-Usuario-Id.
      */
-    private Long extraerUsuarioId(Jwt token) {
-        if (token == null || token.getSubject() == null) {
-            throw new AccesoDenegadoException("Se requiere autenticación para acceder a las notificaciones");
+    private Long extraerUsuarioId(Authentication authentication, Long usuarioIdHeader) {
+        if (authentication != null && authentication.getName() != null && !authentication.getName().equals("anonymousUser")) {
+            try {
+                return Long.valueOf(authentication.getName());
+            } catch (NumberFormatException ignored) {
+                // Si el principal no es numérico directo
+            }
         }
-        return Long.valueOf(token.getSubject());
+        if (usuarioIdHeader != null) {
+            return usuarioIdHeader;
+        }
+        throw new AccesoDenegadoException("Se requiere usuario autenticado o encabezado X-Usuario-Id");
     }
 }
-

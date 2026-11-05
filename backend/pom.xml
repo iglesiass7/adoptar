@@ -17,7 +17,7 @@
     <description>AdoptAR - API REST de gestión de adopción de mascotas</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
         <springdoc.version>3.1.1</springdoc.version>
     </properties>
 

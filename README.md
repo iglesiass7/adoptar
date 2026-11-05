@@ -11,7 +11,7 @@ Proyecto de **Diseño de Sistemas — UTN FRBA**.
 
 | Capa | Tecnología |
 | --- | --- |
-| Backend | Java 21 · Spring Boot 4.1 · Spring Data JPA · Spring Security |
+| Backend | Java 25 · Spring Boot 4.1 · Spring Data JPA · Spring Security |
 | Base de datos | PostgreSQL 17 · Flyway (migraciones versionadas) |
 | Frontend | React 19 · Vite · TypeScript |
 | Documentación de la API | springdoc-openapi (Swagger UI) |
@@ -49,7 +49,7 @@ y hay menos conflictos al mergear. Dentro de cada módulo se respetan las capas
 
 ## Qué hay que tener instalado
 
-- **JDK 21**
+- **JDK 25 (LTS)**
 - **Docker Desktop** (para la base de datos y para los tests)
 - **Node.js 22** o superior
 - **IntelliJ IDEA** (recomendado)
