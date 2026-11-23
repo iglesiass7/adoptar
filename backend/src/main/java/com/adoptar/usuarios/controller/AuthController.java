@@ -3,6 +3,7 @@ package com.adoptar.usuarios.controller;
 import com.adoptar.usuarios.dto.LoginRequest;
 import com.adoptar.usuarios.dto.LoginResponse;
 import com.adoptar.usuarios.dto.RegistroAdoptanteRequest;
+import com.adoptar.usuarios.dto.RegistroRefugioRequest;
 import com.adoptar.usuarios.dto.UsuarioResponse;
 import com.adoptar.usuarios.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +38,15 @@ public class AuthController {
             description = "Crea la cuenta con rol ADOPTANTE. Responde 409 si el mail ya está registrado.")
     public UsuarioResponse registrarAdoptante(@Valid @RequestBody RegistroAdoptanteRequest datos) {
         return usuarioService.registrarAdoptante(datos);
+    }
+
+    @PostMapping("/registro/refugio")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Registrar refugio (CU-02)",
+            description = "Crea la cuenta con rol REFUGIO y su ficha en estado PENDIENTE: no puede publicar "
+                    + "hasta que un admin lo verifique. Responde 409 si el mail o el CUIT ya están registrados.")
+    public UsuarioResponse registrarRefugio(@Valid @RequestBody RegistroRefugioRequest datos) {
+        return usuarioService.registrarRefugio(datos);
     }
 
     @PostMapping("/login")
