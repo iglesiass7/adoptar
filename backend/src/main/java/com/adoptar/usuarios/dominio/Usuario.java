@@ -70,6 +70,18 @@ public class Usuario extends EntidadAuditada {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * Da de baja la cuenta sin borrarla (nada se borra físicamente): no puede iniciar sesión
+     * y su token deja de servir. Sus datos y su historial quedan.
+     */
+    public void desactivar() {
+        this.activo = false;
+    }
+
+    public void reactivar() {
+        this.activo = true;
+    }
+
     public Long getId() {
         return id;
     }
