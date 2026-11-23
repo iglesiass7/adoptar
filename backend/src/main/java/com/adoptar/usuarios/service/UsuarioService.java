@@ -4,7 +4,10 @@ import com.adoptar.shared.exception.RecursoNoEncontradoException;
 import com.adoptar.usuarios.dominio.CredencialesInvalidasException;
 import com.adoptar.usuarios.dominio.CuitYaRegistradoException;
 import com.adoptar.usuarios.dominio.EmailYaRegistradoException;
+import com.adoptar.usuarios.dominio.PasswordActualIncorrectaException;
 import com.adoptar.usuarios.dominio.Usuario;
+import com.adoptar.usuarios.dto.ActualizarDatosRequest;
+import com.adoptar.usuarios.dto.CambioPasswordRequest;
 import com.adoptar.usuarios.dto.LoginRequest;
 import com.adoptar.usuarios.dto.LoginResponse;
 import com.adoptar.usuarios.dto.RegistroAdoptanteRequest;
@@ -82,9 +85,37 @@ public class UsuarioService {
      */
     @Transactional(readOnly = true)
     public UsuarioResponse obtener(Long id) {
-        return usuarios.findById(id)
-                .map(UsuarioResponse::de)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", id));
+        return UsuarioResponse.de(buscar(id));
+    }
+
+    private Usuario buscar(Long id) {
+        return usuarios.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("Usuario", id));
+    }
+
+    /**
+     * CU-05 · Editar mis datos (nombre y teléfono).
+     *
+     * @throws RecursoNoEncontradoException si la cuenta no existe
+     */
+    @Transactional
+    public UsuarioResponse actualizarDatos(Long id, ActualizarDatosRequest datos) {
+        Usuario usuario = buscar(id);
+        usuario.actualizarDatos(datos.nombre(), datos.telefono());
+        return UsuarioResponse.de(usuario);
+    }
+
+    /**
+     * CU-05 · Cambiar mi contraseña. Pide la actual antes de aceptar la nueva.
+     *
+     * @throws PasswordActualIncorrectaException si la contraseña actual no coincide
+     */
+    @Transactional
+    public void cambiarPassword(Long id, CambioPasswordRequest datos) {
+        Usuario usuario = buscar(id);
+        if (!passwordEncoder.matches(datos.passwordActual(), usuario.getPasswordHash())) {
+            throw new PasswordActualIncorrectaException();
+        }
+        usuario.cambiarPasswordHash(passwordEncoder.encode(datos.passwordNueva()));
     }
 
     /**

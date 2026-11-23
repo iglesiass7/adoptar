@@ -70,6 +70,17 @@ public class Usuario extends EntidadAuditada {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 
+    /** El mail y el rol no se cambian: el mail identifica la cuenta y el rol lo decide el sistema. */
+    public void actualizarDatos(String nombre, String telefono) {
+        this.nombre = nombre.trim();
+        this.telefono = telefono;
+    }
+
+    /** Recibe la contraseña ya hasheada: el dominio nunca ve la contraseña en texto plano. */
+    public void cambiarPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
     /**
      * Da de baja la cuenta sin borrarla (nada se borra físicamente): no puede iniciar sesión
      * y su token deja de servir. Sus datos y su historial quedan.
