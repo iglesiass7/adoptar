@@ -38,6 +38,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/mascotas/**").permitAll()
                         // Administración: solo ADMIN
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        // El perfil de adoptante (CU-04) es solo para adoptantes
+                        .requestMatchers("/api/v1/usuarios/yo/perfil").hasRole("ADOPTANTE")
                         // Todo lo demás: cualquier usuario logueado
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(recurso -> recurso

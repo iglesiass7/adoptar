@@ -45,7 +45,7 @@ class SeguridadTests {
 
     @BeforeEach
     void crearUsuarios() {
-        usuarios.deleteAll();
+        CuentasDePrueba.vaciarBase(jdbc);
         usuarios.save(Usuario.nuevoAdoptante("carla@mail.com", passwordEncoder.encode("clave-segura"), "Carla", null));
         Usuario admin = usuarios.save(Usuario.nuevoAdoptante("admin@mail.com",
                 passwordEncoder.encode("clave-segura"), "Admin", null));
