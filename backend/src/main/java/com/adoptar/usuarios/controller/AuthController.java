@@ -50,7 +50,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Iniciar sesión",
+    @Operation(summary = "Iniciar sesión (CU-03)",
             description = "Devuelve el token para mandar en cada pedido. Responde 401 si el mail o la contraseña no coinciden.")
     public LoginResponse iniciarSesion(@Valid @RequestBody LoginRequest datos) {
         return usuarioService.iniciarSesion(datos);
