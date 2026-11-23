@@ -23,7 +23,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, ErroresDeSeguridad errores) throws Exception {
         return http
                 // API REST sin sesiones ni formularios HTML: CSRF no aplica
                 .csrf(csrf -> csrf.disable())
@@ -43,7 +43,13 @@ public class SecurityConfig {
                         // Todo lo demás: cualquier usuario logueado
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(recurso -> recurso
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(rolDelToken())))
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(rolDelToken()))
+                        .authenticationEntryPoint(errores)
+                        .accessDeniedHandler(errores))
+                // Los 401 y 403 salen en formato ProblemDetail, como el resto de los errores
+                .exceptionHandling(excepciones -> excepciones
+                        .authenticationEntryPoint(errores)
+                        .accessDeniedHandler(errores))
                 .build();
     }
 

@@ -1,7 +1,10 @@
 package com.adoptar.usuarios;
 
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -92,6 +95,34 @@ class SeguridadTests {
 
         mvc.perform(post("/api/v1/mascotas").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void elErrorSinTokenExplicaQueHacerEnFormatoProblemDetail() throws Exception {
+        mvc.perform(get("/api/v1/usuarios/yo"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().exists("WWW-Authenticate"))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.title").value("No autenticado"))
+                .andExpect(jsonPath("$.detail").value(startsWith("Falta el token")))
+                .andExpect(jsonPath("$.instance").value("/api/v1/usuarios/yo"));
+    }
+
+    @Test
+    void elErrorConTokenInvalidoPideIniciarSesionDeNuevo() throws Exception {
+        mvc.perform(get("/api/v1/usuarios/yo").header("Authorization", "Bearer token-inventado"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.detail").value(startsWith("El token no es válido")));
+    }
+
+    @Test
+    void elErrorPorRolSaleEnFormatoProblemDetail() throws Exception {
+        mvc.perform(get("/api/v1/admin/usuarios").header("Authorization", "Bearer " + token("carla@mail.com")))
+                .andExpect(status().isForbidden())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.detail").value("Tu rol no tiene permiso para esta acción"));
     }
 
     @Test
