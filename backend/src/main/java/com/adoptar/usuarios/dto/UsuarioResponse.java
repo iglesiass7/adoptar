@@ -6,10 +6,10 @@ import com.adoptar.usuarios.dominio.Usuario;
 /**
  * Lo que la API muestra de un usuario. Nunca incluye el hash de la contraseña.
  */
-public record UsuarioResponse(Long id, String email, String nombre, String telefono, Rol rol) {
+public record UsuarioResponse(Long id, String email, String nombre, String telefono, Rol rol, boolean activo) {
 
     public static UsuarioResponse de(Usuario usuario) {
         return new UsuarioResponse(usuario.getId(), usuario.getEmail(), usuario.getNombre(),
-                usuario.getTelefono(), usuario.getRol());
+                usuario.getTelefono(), usuario.getRol(), usuario.isActivo());
     }
 }

@@ -52,7 +52,7 @@ class LoginTests {
 
     @BeforeEach
     void crearUsuario() {
-        usuarios.deleteAll();
+        CuentasDePrueba.vaciarBase(jdbc);
         carla = usuarios.save(Usuario.nuevoAdoptante("carla@mail.com",
                 passwordEncoder.encode("clave-segura"), "Carla", null));
     }

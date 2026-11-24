@@ -2,12 +2,18 @@ package com.adoptar.usuarios.service;
 
 import com.adoptar.shared.exception.RecursoNoEncontradoException;
 import com.adoptar.usuarios.dominio.CredencialesInvalidasException;
+import com.adoptar.usuarios.dominio.CuitYaRegistradoException;
 import com.adoptar.usuarios.dominio.EmailYaRegistradoException;
+import com.adoptar.usuarios.dominio.PasswordActualIncorrectaException;
 import com.adoptar.usuarios.dominio.Usuario;
+import com.adoptar.usuarios.dto.ActualizarDatosRequest;
+import com.adoptar.usuarios.dto.CambioPasswordRequest;
 import com.adoptar.usuarios.dto.LoginRequest;
 import com.adoptar.usuarios.dto.LoginResponse;
 import com.adoptar.usuarios.dto.RegistroAdoptanteRequest;
+import com.adoptar.usuarios.dto.RegistroRefugioRequest;
 import com.adoptar.usuarios.dto.UsuarioResponse;
+import com.adoptar.usuarios.repository.FichaRefugioRepository;
 import com.adoptar.usuarios.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,11 +28,14 @@ public class UsuarioService {
     private final UsuarioRepository usuarios;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final FichaRefugioRepository fichasRefugio;
 
-    public UsuarioService(UsuarioRepository usuarios, PasswordEncoder passwordEncoder, TokenService tokenService) {
+    public UsuarioService(UsuarioRepository usuarios, PasswordEncoder passwordEncoder, TokenService tokenService,
+                          FichaRefugioRepository fichasRefugio) {
         this.usuarios = usuarios;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
+        this.fichasRefugio = fichasRefugio;
     }
 
     /**
@@ -47,15 +56,66 @@ public class UsuarioService {
     }
 
     /**
+     * CU-02 · Registrar refugio. Crea la cuenta y su ficha en estado PENDIENTE, en una sola
+     * transacción: si algo falla, no queda ni la cuenta ni la ficha.
+     *
+     * @throws EmailYaRegistradoException si el mail ya tiene una cuenta
+     * @throws CuitYaRegistradoException  si ya hay un refugio con ese CUIT
+     */
+    @Transactional
+    public UsuarioResponse registrarRefugio(RegistroRefugioRequest datos) {
+        String email = Usuario.normalizarEmail(datos.email());
+        if (usuarios.existsByEmail(email)) {
+            throw new EmailYaRegistradoException(email);
+        }
+        if (fichasRefugio.existeCuit(datos.cuit())) {
+            throw new CuitYaRegistradoException(datos.cuit());
+        }
+
+        Usuario refugio = usuarios.save(Usuario.nuevoRefugio(email, passwordEncoder.encode(datos.password()),
+                datos.nombre(), datos.telefono()));
+        fichasRefugio.crearPendiente(refugio.getId(), datos);
+        return UsuarioResponse.de(refugio);
+    }
+
+    /**
      * Datos de una cuenta.
      *
      * @throws RecursoNoEncontradoException si no existe
      */
     @Transactional(readOnly = true)
     public UsuarioResponse obtener(Long id) {
-        return usuarios.findById(id)
-                .map(UsuarioResponse::de)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", id));
+        return UsuarioResponse.de(buscar(id));
+    }
+
+    private Usuario buscar(Long id) {
+        return usuarios.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("Usuario", id));
+    }
+
+    /**
+     * CU-05 · Editar mis datos (nombre y teléfono).
+     *
+     * @throws RecursoNoEncontradoException si la cuenta no existe
+     */
+    @Transactional
+    public UsuarioResponse actualizarDatos(Long id, ActualizarDatosRequest datos) {
+        Usuario usuario = buscar(id);
+        usuario.actualizarDatos(datos.nombre(), datos.telefono());
+        return UsuarioResponse.de(usuario);
+    }
+
+    /**
+     * CU-05 · Cambiar mi contraseña. Pide la actual antes de aceptar la nueva.
+     *
+     * @throws PasswordActualIncorrectaException si la contraseña actual no coincide
+     */
+    @Transactional
+    public void cambiarPassword(Long id, CambioPasswordRequest datos) {
+        Usuario usuario = buscar(id);
+        if (!passwordEncoder.matches(datos.passwordActual(), usuario.getPasswordHash())) {
+            throw new PasswordActualIncorrectaException();
+        }
+        usuario.cambiarPasswordHash(passwordEncoder.encode(datos.passwordNueva()));
     }
 
     /**

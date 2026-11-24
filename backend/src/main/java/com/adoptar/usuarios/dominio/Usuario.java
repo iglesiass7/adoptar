@@ -60,9 +60,37 @@ public class Usuario extends EntidadAuditada {
         return new Usuario(email, passwordHash, nombre, telefono, Rol.ADOPTANTE);
     }
 
+    /** Crea la cuenta de un refugio (CU-02). Su ficha en la tabla refugios nace PENDIENTE. */
+    public static Usuario nuevoRefugio(String email, String passwordHash, String nombre, String telefono) {
+        return new Usuario(email, passwordHash, nombre, telefono, Rol.REFUGIO);
+    }
+
     /** El mail se guarda sin espacios y en minúsculas: "Ana@X.com " y "ana@x.com" son el mismo. */
     public static String normalizarEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    /** El mail y el rol no se cambian: el mail identifica la cuenta y el rol lo decide el sistema. */
+    public void actualizarDatos(String nombre, String telefono) {
+        this.nombre = nombre.trim();
+        this.telefono = telefono;
+    }
+
+    /** Recibe la contraseña ya hasheada: el dominio nunca ve la contraseña en texto plano. */
+    public void cambiarPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    /**
+     * Da de baja la cuenta sin borrarla (nada se borra físicamente): no puede iniciar sesión
+     * y su token deja de servir. Sus datos y su historial quedan.
+     */
+    public void desactivar() {
+        this.activo = false;
+    }
+
+    public void reactivar() {
+        this.activo = true;
     }
 
     public Long getId() {
